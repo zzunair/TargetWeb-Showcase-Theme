@@ -25,12 +25,7 @@ $link_label = trim( (string) targetweb_mod( 'tw_card_link_label' ) );
 				<article class="tw-card">
 					<div class="tw-card__media">
 						<?php if ( ! empty( $template['image'] ) ) : ?>
-							<?php
-							$image_alt = ( false !== strpos( $template['image'], 'coming-soon.png' ) )
-								? __( 'Coming soon', 'targetweb' )
-								: '';
-							?>
-							<img src="<?php echo esc_url( $template['image'] ); ?>" alt="<?php echo esc_attr( $image_alt ); ?>" loading="lazy" decoding="async">
+							<img src="<?php echo esc_url( $template['image'] ); ?>" alt="<?php echo ! empty( $template['coming_soon'] ) ? esc_attr__( 'Coming soon', 'targetweb' ) : ''; ?>" loading="lazy" decoding="async">
 						<?php else : ?>
 							<div class="tw-card__placeholder"><?php echo targetweb_placeholder_icon(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Fixed SVG from the theme. ?></div>
 						<?php endif; ?>

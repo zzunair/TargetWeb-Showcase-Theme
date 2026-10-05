@@ -551,26 +551,32 @@ function targetweb_customizer_config() {
 					'priority' => $base + 30,
 				)
 			);
-			$image_default = '';
-			if ( ! empty( $category['coming_soon'][ $index ] ) ) {
-				$image_default = targetweb_coming_soon_url();
-			}
+			$add(
+				"tw_{$slug}_{$n}_coming_soon",
+				array(
+					'label'       => __( 'Show coming soon image', 'targetweb' ),
+					'description' => __( 'Uses the coming soon graphic instead of the screenshot.', 'targetweb' ),
+					'section'     => $section_id,
+					'type'        => 'checkbox',
+					'default'     => ! empty( $category['coming_soon'][ $index ] ),
+					'sanitize'    => 'targetweb_sanitize_checkbox',
+					'priority'    => $base + 35,
+				)
+			);
 			$add(
 				"tw_{$slug}_{$n}_image",
 				array(
-					'label'       => __( 'Screenshot', 'targetweb' ),
-					'description' => __( 'Use a 4:3 image, 1600×1200 pixels.', 'targetweb' ),
-					'section'     => $section_id,
-					'type'        => 'image',
-					'default'     => $image_default,
-					'sanitize'    => 'esc_url_raw',
-					'priority'    => $base + 40,
+					'label'           => __( 'Screenshot', 'targetweb' ),
+					'description'     => __( 'Use a 4:3 image, 1600×1200 pixels. Hidden while coming soon is on.', 'targetweb' ),
+					'section'         => $section_id,
+					'type'            => 'image',
+					'default'         => '',
+					'sanitize'        => 'esc_url_raw',
+					'priority'        => $base + 40,
+					'active_callback' => 'targetweb_show_screenshot_field',
 				)
 			);
 			$link_description = __( 'Full URL, or #contact to stay on this page. Full URLs open in a new tab.', 'targetweb' );
-			if ( ! empty( $category['coming_soon'][ $index ] ) ) {
-				$link_description = __( 'No live demo yet. Use #contact to jump to the call to action.', 'targetweb' );
-			}
 			$add(
 				"tw_{$slug}_{$n}_url",
 				array(
@@ -946,12 +952,21 @@ function targetweb_get_categories() {
 		$count     = count( $blueprint['blurbs'] );
 
 		for ( $n = 1; $n <= $count; $n++ ) {
+			$coming_soon = targetweb_sanitize_checkbox( targetweb_mod( "tw_{$slug}_{$n}_coming_soon" ) );
+			$image       = (string) targetweb_mod( "tw_{$slug}_{$n}_image" );
+			if ( $coming_soon ) {
+				$image = targetweb_coming_soon_url();
+			} elseif ( false !== strpos( $image, 'coming-soon.png' ) ) {
+				$image = '';
+			}
+
 			$templates[] = array(
-				'name'  => targetweb_mod( "tw_{$slug}_{$n}_name" ),
-				'tag'   => targetweb_mod( "tw_{$slug}_{$n}_tag" ),
-				'blurb' => targetweb_mod( "tw_{$slug}_{$n}_blurb" ),
-				'image' => targetweb_mod( "tw_{$slug}_{$n}_image" ),
-				'url'   => targetweb_mod( "tw_{$slug}_{$n}_url" ),
+				'name'         => targetweb_mod( "tw_{$slug}_{$n}_name" ),
+				'tag'          => targetweb_mod( "tw_{$slug}_{$n}_tag" ),
+				'blurb'        => targetweb_mod( "tw_{$slug}_{$n}_blurb" ),
+				'image'        => $image,
+				'coming_soon'  => $coming_soon,
+				'url'          => targetweb_mod( "tw_{$slug}_{$n}_url" ),
 			);
 		}
 
@@ -989,6 +1004,22 @@ function targetweb_sanitize_monogram( $value ) {
  */
 function targetweb_sanitize_checkbox( $value ) {
 	return (bool) filter_var( $value, FILTER_VALIDATE_BOOLEAN );
+}
+
+/**
+ * Show the screenshot control only while coming soon is off.
+ *
+ * @param WP_Customize_Control $control Screenshot control.
+ * @return bool
+ */
+function targetweb_show_screenshot_field( $control ) {
+	$checkbox = preg_replace( '/_image$/', '_coming_soon', $control->id );
+	$setting  = $control->manager->get_setting( $checkbox );
+	if ( ! $setting ) {
+		return true;
+	}
+
+	return ! targetweb_sanitize_checkbox( $setting->value() );
 }
 
 /**

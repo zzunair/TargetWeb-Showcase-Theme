@@ -148,5 +148,13 @@ function targetweb_customizer_controls_css() {
 		array(),
 		TARGETWEB_VERSION
 	);
+
+	wp_enqueue_script(
+		'targetweb-customizer-controls',
+		get_template_directory_uri() . '/assets/js/customizer-controls.js',
+		array( 'customize-controls' ),
+		TARGETWEB_VERSION,
+		true
+	);
 }
 add_action( 'customize_controls_enqueue_scripts', 'targetweb_customizer_controls_css' );
