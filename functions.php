@@ -7,7 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'TARGETWEB_VERSION', '1.0.0' );
+define( 'TARGETWEB_VERSION', wp_get_theme( get_template() )->get( 'Version' ) );
 
 require get_template_directory() . '/inc/defaults.php';
 require get_template_directory() . '/inc/template-tags.php';
